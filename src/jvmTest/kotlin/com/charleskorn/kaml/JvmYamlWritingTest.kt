@@ -290,6 +290,32 @@ class JvmYamlWritingTest : DescribeSpec({
 
                 """.trimIndent()
         }
+
+        describe("serializing a list as an explicitly stated SequenceType") {
+            val output = ByteArrayOutputStream()
+            val thing = SequenceThing(
+                "Name of Thing",
+                listOf("Default 1", "Default 2", "Default 3"),
+                listOf("ForceFlow 1", "ForceFlow 2", "ForceFlow 3"),
+                listOf("ForceBlock 1", "ForceBlock 2", "ForceBlock 3"),
+            )
+
+            Yaml.default.encodeToStream<SequenceThing>(thing, output)
+            output.toString(Charsets.UTF_8) shouldBe
+                """
+                name: "Name of Thing"
+                default:
+                - "Default 1"
+                - "Default 2"
+                - "Default 3"
+                forceFlow: ["ForceFlow 1", "ForceFlow 2", "ForceFlow 3"]
+                forceBlock:
+                - "ForceBlock 1"
+                - "ForceBlock 2"
+                - "ForceBlock 3"
+
+                """.trimIndent()
+        }
     }
 })
 
@@ -335,4 +361,15 @@ data class ThingML(
     @YamlSingleLineStringStyle(SingleLineStringStyle.Plain)
     @YamlMultiLineStringStyle(MultiLineStringStyle.Plain)
     val plain: String,
+)
+
+@Serializable
+data class SequenceThing(
+    val name: String,
+    // Without any annotations
+    val default: List<String>,
+    @YamlSequenceStyle(SequenceStyle.Flow)
+    val forceFlow: List<String>,
+    @YamlSequenceStyle(SequenceStyle.Block)
+    val forceBlock: List<String>,
 )

@@ -83,6 +83,7 @@ internal class YamlOutput(
 
     private var forcedSingleLineScalarStyle: SingleLineStringStyle? = null
     private var forcedMultiLineScalarStyle: MultiLineStringStyle? = null
+    private var forcedSequenceStyle: SequenceStyle? = null
 
     override fun encodeString(value: String) {
         if (shouldReadTypeName) {
@@ -125,6 +126,7 @@ internal class YamlOutput(
         // If this field was annotated we overrule the used ScalarStyle with the annotation
         forcedSingleLineScalarStyle = descriptor.getAnnotation<YamlSingleLineStringStyle>(index)?.singleLineStringStyle
         forcedMultiLineScalarStyle = descriptor.getAnnotation<YamlMultiLineStringStyle>(index)?.multiLineStringStyle
+        forcedSequenceStyle = descriptor.getAnnotation<YamlSequenceStyle>(index)?.sequenceStyle
 
         return super.encodeElement(descriptor, index)
     }
@@ -132,7 +134,7 @@ internal class YamlOutput(
     override fun beginStructure(descriptor: SerialDescriptor): CompositeEncoder {
         when (descriptor.kind) {
             is PolymorphicKind -> shouldReadTypeName = true
-            StructureKind.LIST -> emitter.emit(SequenceStartEvent(null, null, true, configuration.sequenceStyle.flowStyle))
+            StructureKind.LIST -> emitter.emit(SequenceStartEvent(null, null, true, forcedSequenceStyle?.flowStyle ?: configuration.sequenceStyle.flowStyle))
             StructureKind.MAP, StructureKind.CLASS, StructureKind.OBJECT -> {
                 val typeName = getAndClearTypeName()
 

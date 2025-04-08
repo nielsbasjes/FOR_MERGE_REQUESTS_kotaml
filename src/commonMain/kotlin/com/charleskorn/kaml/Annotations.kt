@@ -56,3 +56,15 @@ public annotation class YamlSingleLineStringStyle(
 public annotation class YamlMultiLineStringStyle(
     val multiLineStringStyle: MultiLineStringStyle,
 )
+
+/**
+ * Force writing a List value using the specified SequenceStyle.
+ * This overrides the value specified in the [YamlConfiguration].
+ */
+@OptIn(ExperimentalSerializationApi::class)
+@Target(AnnotationTarget.PROPERTY)
+@Retention(AnnotationRetention.BINARY)
+@SerialInfo
+public annotation class YamlSequenceStyle(
+    val sequenceStyle: SequenceStyle,
+)
