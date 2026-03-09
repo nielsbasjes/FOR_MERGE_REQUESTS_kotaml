@@ -26,10 +26,10 @@ import org.jetbrains.kotlin.gradle.targets.js.ir.KotlinJsIrLink
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 
 plugins {
-    kotlin("multiplatform")
-    kotlin("plugin.serialization")
-    id("io.kotest") version "6.0.4"
-    id("com.google.devtools.ksp") version "2.3.3"
+    alias(libs.plugins.kotlin.multiplatform)
+    alias(libs.plugins.kotlin.serialization)
+    alias(libs.plugins.kotest)
+    alias(libs.plugins.ksp)
 }
 
 group = "io.heapy.kotaml"
@@ -80,25 +80,25 @@ kotlin {
     sourceSets {
         commonMain {
             dependencies {
-                api("org.jetbrains.kotlinx:kotlinx-serialization-core:1.9.0")
-                implementation("it.krzeminski:snakeyaml-engine-kmp:4.0.1")
-                implementation("com.squareup.okio:okio:3.16.4")
+                api(libs.kotlinx.serialization.core)
+                implementation(libs.snakeyaml.engine.kmp)
+                implementation(libs.okio)
             }
         }
 
         commonTest {
             dependencies {
-                implementation("io.kotest:kotest-assertions-core:6.0.4")
-                implementation("io.kotest:kotest-framework-engine:6.0.4")
+                implementation(libs.kotest.assertions.core)
+                implementation(libs.kotest.framework.engine)
                 // Overriding coroutines' version to solve a problem with WASM JS tests.
                 // See https://kotlinlang.slack.com/archives/CDFP59223/p1736191408326039?thread_ts=1734964013.996149&cid=CDFP59223
-                runtimeOnly("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.10.2")
+                runtimeOnly(libs.kotlinx.coroutines.core)
             }
         }
 
         jvmTest {
             dependencies {
-                implementation("io.kotest:kotest-runner-junit5:6.0.4")
+                implementation(libs.kotest.runner.junit5)
             }
         }
     }
