@@ -1,17 +1,10 @@
-# kaml is no longer maintained
+# kotaml
 
-I am no longer actively using kaml and do not have time to maintain it properly, and so this project is now archived.
+**kotaml** is a supported fork of [kaml](https://github.com/charleskorn/kaml) by [Charles Korn](https://github.com/charleskorn).
 
-The source code and published artifacts will remain available for the foreseeable future.
-
-Maintained forks are welcome and encouraged.
-
-# kaml
-
-[![Pipeline](https://github.com/charleskorn/kaml/actions/workflows/build.yml/badge.svg)](https://github.com/charleskorn/kaml/actions/workflows/build.yml)
-[![Coverage](https://img.shields.io/codecov/c/github/charleskorn/kaml.svg)](https://codecov.io/gh/charleskorn/kaml)
-[![License](https://img.shields.io/github/license/charleskorn/kaml.svg)](https://opensource.org/licenses/Apache-2.0)
-[![Maven Central](https://img.shields.io/maven-central/v/com.charleskorn.kaml/kaml.svg?label=maven%20central)](https://search.maven.org/search?q=g:%22com.charleskorn.kaml%22%20AND%20a:%22kaml%22)
+[![Pipeline](https://github.com/Heapy/kotaml/actions/workflows/build.yml/badge.svg)](https://github.com/Heapy/kotaml/actions/workflows/build.yml)
+[![License](https://img.shields.io/github/license/Heapy/kotaml.svg)](https://opensource.org/licenses/Apache-2.0)
+[![Maven Central](https://img.shields.io/maven-central/v/io.heapy.kotaml/kotaml.svg?label=maven%20central)](https://search.maven.org/search?q=g:%22io.heapy.kotaml%22%20AND%20a:%22kotaml%22)
 
 ## What is this?
 
@@ -20,8 +13,6 @@ This library adds YAML support to [kotlinx.serialization](https://github.com/Kot
 Currently, only Kotlin/JVM is fully supported.
 
 Kotlin/JS and Kotlin/Wasm support are considered highly experimental. It is not yet fully functional, and may be removed or modified at any time.
-
-(Follow [this issue](https://github.com/charleskorn/kaml/issues/232) for a discussion of adding support for other targets.)
 
 YAML version 1.2 is supported.
 
@@ -88,38 +79,23 @@ println(
 )
 ```
 
-## Referencing kaml
+## Referencing kotaml
 
 Add the following to your Gradle build script:
 
-**Groovy DSL**
-
-```groovy
-plugins {
-    id 'org.jetbrains.kotlin.jvm' version '1.4.20'
-    id 'org.jetbrains.kotlin.plugin.serialization' version '1.4.20'
-}
-
-dependencies {
-  implementation "com.charleskorn.kaml:kaml:<version number here>" // Get the latest version number from https://github.com/charleskorn/kaml/releases/latest
-}
-```
-
-**Kotlin DSL**
-
 ```kotlin
 plugins {
-    kotlin("jvm") version "1.4.20"
-    kotlin("plugin.serialization") version "1.4.20"
+    kotlin("jvm").version("2.3.10")
+    kotlin("plugin.serialization").version("2.3.10")
 }
 
 dependencies {
-  implementation("com.charleskorn.kaml:kaml:<version number here>") // Get the latest version number from https://github.com/charleskorn/kaml/releases/latest
+    implementation("io.heapy.kotaml:kotaml:0.105.0")
 }
 ```
 
-Check the [releases page](https://github.com/charleskorn/kaml/releases) for the latest release information,
-and the [Maven Central page](https://search.maven.org/artifact/com.charleskorn.kaml/kaml) for examples of how
+Check the [releases page](https://github.com/Heapy/kotaml/releases) for the latest release information,
+and the [Maven Central page](https://search.maven.org/artifact/io.heapy.kotaml/kotaml) for examples of how
 to reference the library in other build systems.
 
 ## Features
@@ -213,11 +189,11 @@ to reference the library in other build systems.
 
   Extensions can only be defined at the top level of a document, and only if the top level element is a map or object. Any key starting with the extension prefix must have an anchor defined (`&...`) and will not be included in the deserialised value.
 
-## Contributing to kaml
+## Contributing to kotaml
 
 Pull requests and bug reports are always welcome!
 
-kaml uses Gradle for builds and testing:
+kotaml uses Gradle for builds and testing:
 
 * To build the library: `./gradlew assemble`
 * To run the tests and static analysis tools: `./gradlew check`
