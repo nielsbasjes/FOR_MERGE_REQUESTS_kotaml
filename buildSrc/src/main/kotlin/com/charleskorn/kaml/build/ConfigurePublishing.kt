@@ -1,6 +1,7 @@
 /*
 
    Copyright 2018-2023 Charles Korn.
+   Copyright 2026 Ruslan Ibrahimau.
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -18,56 +19,28 @@
 
 package com.charleskorn.kaml.build
 
-import io.github.gradlenexus.publishplugin.NexusPublishExtension
-import io.github.gradlenexus.publishplugin.NexusPublishPlugin
 import org.gradle.api.Project
-import org.gradle.api.Task
 import org.gradle.api.publish.PublishingExtension
 import org.gradle.api.publish.maven.MavenPublication
 import org.gradle.api.publish.maven.plugins.MavenPublishPlugin
-import org.gradle.api.tasks.SourceSetContainer
-import org.gradle.api.tasks.TaskProvider
 import org.gradle.jvm.tasks.Jar
 import org.gradle.kotlin.dsl.apply
 import org.gradle.kotlin.dsl.configure
-import org.gradle.kotlin.dsl.extra
 import org.gradle.kotlin.dsl.getByType
 import org.gradle.kotlin.dsl.register
 import org.gradle.kotlin.dsl.withType
-import org.gradle.plugins.signing.Sign
 import org.gradle.plugins.signing.SigningExtension
 import org.gradle.plugins.signing.SigningPlugin
-import java.nio.file.Files
-import java.util.Base64
 
 fun Project.configurePublishing() {
     apply<MavenPublishPlugin>()
-    apply<NexusPublishPlugin>()
     apply<SigningPlugin>()
 
-    val usernameEnvironmentVariableName = "OSSRH_USERNAME"
-    val passwordEnvironmentVariableName = "OSSRH_PASSWORD"
-    val repoUsername = System.getenv(usernameEnvironmentVariableName)
-    val repoPassword = System.getenv(passwordEnvironmentVariableName)
-
-    val validateCredentialsTask = tasks.register("validateMavenRepositoryCredentials") {
-        doFirst {
-            if (repoUsername.isNullOrBlank()) {
-                throw RuntimeException("Environment variable '$usernameEnvironmentVariableName' not set.")
-            }
-
-            if (repoPassword.isNullOrBlank()) {
-                throw RuntimeException("Environment variable '$passwordEnvironmentVariableName' not set.")
-            }
-        }
-    }
-
-    createPublishingTasks(repoUsername, repoPassword, validateCredentialsTask)
+    createPublishingTasks()
     createSigningTasks()
-    createReleaseTasks(validateCredentialsTask)
 }
 
-private fun Project.createPublishingTasks(repoUsername: String?, repoPassword: String?, validateCredentialsTask: TaskProvider<Task>) {
+private fun Project.createPublishingTasks() {
     configure<PublishingExtension> {
         publications.withType<MavenPublication> {
             // HACK: this is a workaround while we're waiting to get Dokka set up correctly
@@ -82,9 +55,9 @@ private fun Project.createPublishingTasks(repoUsername: String?, repoPassword: S
             artifact(javadocTask)
 
             pom {
-                name.set("kaml")
+                name.set("kotaml")
                 description.set("YAML support for kotlinx.serialization")
-                url.set("https://github.com/charleskorn/kaml")
+                url.set("https://github.com/Heapy/kotaml")
 
                 licenses {
                     license {
@@ -99,37 +72,26 @@ private fun Project.createPublishingTasks(repoUsername: String?, repoPassword: S
                         name.set("Charles Korn")
                         email.set("me@charleskorn.com")
                     }
+                    developer {
+                        id.set("ruslan.ibrahimau")
+                        name.set("Ruslan Ibrahimau")
+                        email.set("ruslan@heapy.io")
+                    }
                 }
 
                 scm {
-                    connection.set("scm:git:git://github.com/charleskorn/kaml.git")
-                    developerConnection.set("scm:git:ssh://github.com:charleskorn/kaml.git")
-                    url.set("https://github.com/charleskorn/kaml")
+                    connection.set("scm:git:git://github.com/Heapy/kotaml.git")
+                    developerConnection.set("scm:git:ssh://github.com:Heapy/kotaml.git")
+                    url.set("https://github.com/Heapy/kotaml")
                 }
             }
         }
-    }
 
-    configure<NexusPublishExtension> {
         repositories {
-            sonatype {
-                username.set(repoUsername)
-                password.set(repoPassword)
-
-                nexusUrl.set(uri("https://ossrh-staging-api.central.sonatype.com/service/local/"))
-                snapshotRepositoryUrl.set(uri("https://central.sonatype.com/repository/maven-snapshots/"))
-            }
-        }
-
-        transitionCheckOptions {
-            maxRetries.set(100)
-        }
-    }
-
-    afterEvaluate {
-        publishing.publications.names.forEach { publication ->
-            tasks.named("publish${publication.capitalize()}PublicationToSonatypeRepository").configure {
-                dependsOn(validateCredentialsTask)
+            maven {
+                url = rootProject.layout.buildDirectory
+                    .dir("staging-deploy")
+                    .get().asFile.toURI()
             }
         }
     }
@@ -139,63 +101,7 @@ private fun Project.createSigningTasks() {
     configure<SigningExtension> {
         sign(publishing.publications)
     }
-
-    tasks.withType<Sign>().configureEach {
-        doFirst {
-            val keyId = getEnvironmentVariableOrThrow("GPG_KEY_ID")
-            val keyRing = getEnvironmentVariableOrThrow("GPG_KEY_RING")
-            val keyPassphrase = getEnvironmentVariableOrThrow("GPG_KEY_PASSPHRASE")
-
-            val keyRingFilePath = Files.createTempFile("kaml-signing", ".gpg")
-            keyRingFilePath.toFile().deleteOnExit()
-
-            Files.write(keyRingFilePath, Base64.getDecoder().decode(keyRing))
-
-            project.extra["signing.keyId"] = keyId
-            project.extra["signing.secretKeyRingFile"] = keyRingFilePath.toString()
-            project.extra["signing.password"] = keyPassphrase
-        }
-    }
 }
-
-private fun Project.createReleaseTasks(
-    validateCredentialsTask: TaskProvider<Task>,
-) {
-    setOf("closeSonatypeStagingRepository", "releaseSonatypeStagingRepository").forEach { taskName ->
-        tasks.named(taskName).configure {
-            dependsOn(validateCredentialsTask)
-        }
-    }
-
-    val validateReleaseTask = tasks.register("validateRelease") {
-        doFirst {
-            if (version.toString().contains("-")) {
-                throw RuntimeException("Attempting to publish a release of an untagged commit.")
-            }
-        }
-    }
-
-    tasks.register("publishSnapshot") {
-        dependsOn("publishAllPublicationsToSonatypeRepository")
-    }
-
-    tasks.named("closeSonatypeStagingRepository") {
-        mustRunAfter("publishAllPublicationsToSonatypeRepository")
-    }
-
-    tasks.register("publishRelease") {
-        dependsOn(validateReleaseTask)
-        dependsOn("publishAllPublicationsToSonatypeRepository")
-        dependsOn("closeAndReleaseSonatypeStagingRepository")
-    }
-}
-
-private val Project.sourceSets: SourceSetContainer
-    get() = extensions.getByName("sourceSets") as SourceSetContainer
 
 private val Project.publishing: PublishingExtension
     get() = extensions.getByType<PublishingExtension>()
-
-private fun getEnvironmentVariableOrThrow(name: String): String = System.getenv().getOrElse(name) {
-    throw RuntimeException("Environment variable '$name' not set.")
-}

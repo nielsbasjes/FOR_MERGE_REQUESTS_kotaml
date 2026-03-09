@@ -21,8 +21,6 @@ import com.charleskorn.kaml.build.configureAssemble
 import com.charleskorn.kaml.build.configurePublishing
 import com.charleskorn.kaml.build.configureSpotless
 import com.charleskorn.kaml.build.configureTesting
-import com.charleskorn.kaml.build.configureVersioning
-import com.charleskorn.kaml.build.configureWrapper
 import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 import org.jetbrains.kotlin.gradle.targets.js.ir.KotlinJsIrLink
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
@@ -131,5 +129,3 @@ configureAssemble()
 configurePublishing()
 configureSpotless()
 configureTesting()
-configureVersioning()
-configureWrapper()
