@@ -85,12 +85,12 @@ Add the following to your Gradle build script:
 
 ```kotlin
 plugins {
-    kotlin("jvm").version("2.3.10")
-    kotlin("plugin.serialization").version("2.3.10")
+    kotlin("jvm").version("2.3.20")
+    kotlin("plugin.serialization").version("2.3.20")
 }
 
 dependencies {
-    implementation("io.heapy.kotaml:kotaml:0.106.0")
+    implementation("io.heapy.kotaml:kotaml:0.107.0")
 }
 ```
 
